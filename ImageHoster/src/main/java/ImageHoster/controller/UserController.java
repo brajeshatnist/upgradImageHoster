@@ -40,9 +40,55 @@ public class UserController {
     //This controller method is called when the request pattern is of type 'users/registration' and also the incoming request is of POST type
     //This method calls the business logic and after the user record is persisted in the database, directs to login page
     @RequestMapping(value = "users/registration", method = RequestMethod.POST)
-    public String registerUser(User user) {
-        userService.registerUser(user);
-        return "redirect:/users/login";
+    public String registerUser(User user, Model model) {
+        String passwordError="Password must contain at least 1 alphabet, 1 number & 1 special character";
+
+        if(checkPasswordCriteria(user.getPassword())) {
+
+            userService.registerUser(user);
+            return "redirect:/users/login";
+
+        }
+        else {
+            UserProfile profile = new UserProfile();
+            user.setProfile(profile);
+            model.addAttribute("User", user);
+            model.addAttribute("passwordTypeError",passwordError );
+            return "redirect:/users/registration";
+            }
+
+    }
+
+    //This function evaluates password criteria
+
+    private Boolean checkPasswordCriteria(String password){
+        int count=0;
+        char carray[]=password.toCharArray();
+        int cflag=0;
+        int iflag=0;
+        int sflag=0;
+        for(char c:carray){
+            int asciiValue=(int)c;
+
+            if((c>=65 && c<=90) || (c>= 97 && c<=122) && cflag==0){
+                cflag++;
+                count++;
+            }
+            else if(c>= 48 && c<=57 && iflag==0){
+                iflag++;
+                count++;
+            }
+
+            else if(((c>= 32 && c<=47)||(c>= 58 && c<=64)||(c>= 91 && c<=96)||(c>= 123 && c<=126) )&& sflag==0){
+                sflag++;
+                count++;
+            }
+        }
+
+        if(count<3) {
+            return false;
+        }
+            return true;
     }
 
     //This controller method is called when the request pattern is of type 'users/login'
